@@ -11,7 +11,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Test Enhanced Trivy Scanner
+    name: Test TAD Scanner
     
     steps:
     - name: Checkout code
@@ -32,14 +32,14 @@ jobs:
         
     - name: Test script syntax
       run: |
-        bash -n src/trivy-enhanced-scanner.sh
+        bash -n src/tad-scanner.sh
         bash -n src/trivy-scanner.sh
         bash -n scripts/install.sh
         
     - name: Run basic functionality test
       run: |
         # Test dependency check
-        timeout 10 ./src/trivy-enhanced-scanner.sh || true
+        timeout 10 ./src/tad-scanner.sh || true
         
     - name: Test installation script
       run: |
@@ -123,7 +123,7 @@ jobs:
       
     - name: Create release archive
       run: |
-        tar -czf trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz \
+        tar -czf tad-scanner-${{ github.event.release.tag_name }}.tar.gz \
           src/ scripts/ docs/ examples/ README.md LICENSE CHANGELOG.md
           
     - name: Upload release asset
@@ -132,6 +132,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: ./trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz
-        asset_name: trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz
+        asset_path: ./tad-scanner-${{ github.event.release.tag_name }}.tar.gz
+        asset_name: tad-scanner-${{ github.event.release.tag_name }}.tar.gz
         asset_content_type: application/gzip

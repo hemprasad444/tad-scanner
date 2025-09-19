@@ -1,14 +1,19 @@
-# Changelog
+# TAD Scanner Changelog
 
-All notable changes to the Enhanced Trivy Scanner project will be documented in this file.
+All notable changes to the TAD Scanner (Trivy Advanced Detection Scanner) project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2024-12-19
+## [3.0.0] - 2024-12-19 - TAD Scanner Launch
+
+### 🛡️ TAD Scanner Brand Launch
+- **Rebranded** from "Enhanced Trivy Scanner" to "TAD Scanner" (Trivy Advanced Detection Scanner)
+- **New Identity**: Professional branding with TAD Scanner logo and consistent messaging
+- **Enhanced Naming**: TAD = **T**rivy **A**dvanced **D**etection Scanner
 
 ### Added
-- 🎯 **UX Improvements**
+- 🎯 **Enhanced User Experience**
   - Auto-path completion with smart suggestions
   - Recent paths history (remembers last 10 directories)
   - Real-time progress bars with percentage indicators
@@ -17,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Color-coded severity levels (CRITICAL/HIGH/MEDIUM/LOW)
   - Sound notifications for scan completion
 
-- ⚡ **Functionality Improvements**
+- ⚡ **Advanced Functionality**
   - Parallel scanning with configurable concurrency (1-10)
   - Resume capability for interrupted scans with state saving
   - Incremental scanning to skip already completed images
@@ -32,25 +37,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Improved summary reports with statistics
 
 - 🛠️ **Development & Distribution**
-  - Proper Git repository structure
-  - Automated installation script
-  - Comprehensive documentation
+  - Proper Git repository structure for TAD Scanner
+  - Automated installation script with TAD branding
+  - Comprehensive TAD Scanner documentation
   - GitHub Actions CI/CD pipeline
   - MIT License
 
 ### Changed
-- Restructured codebase for better maintainability
-- Enhanced error handling and user feedback
-- Improved dependency management
-- Better configuration management with persistent settings
+- **Complete rebrand** to TAD Scanner across all files and documentation
+- **Enhanced branding** with consistent TAD Scanner messaging
+- **Improved user interface** with TAD Scanner specific prompts and messages
+- **Better error handling** with TAD Scanner branded error messages
+- **Professional documentation** structure for open-source distribution
 
-### Fixed
-- Path handling issues with relative and absolute paths
-- CSV output generation problems
-- Memory optimization for large scans
-- Various UI/UX improvements
+### TAD Scanner Features
+- **TAD-branded interface** with custom headers and menus
+- **TAD-specific logging** with [TAD-INFO], [TAD-WARN], [TAD-ERROR] prefixes
+- **TAD Scanner configuration** with branded options and settings
+- **TAD Scanner state management** with custom history and resume files
 
-## [2.0.0] - 2024-09-18
+## [2.0.0] - 2024-09-18 - Enhanced Features
 
 ### Added
 - Original advanced Trivy scanner functionality
@@ -77,31 +83,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Planned Features (Roadmap)
+## TAD Scanner Roadmap
 
 ### [3.1.0] - Upcoming
-- [ ] Web UI interface
-- [ ] REST API endpoints
-- [ ] Docker container support
-- [ ] Enhanced reporting with charts
-- [ ] Integration with CI/CD pipelines
+- [ ] TAD Scanner Web UI interface
+- [ ] TAD Scanner REST API endpoints
+- [ ] TAD Scanner Docker container support
+- [ ] Enhanced TAD Scanner reporting with charts
+- [ ] TAD Scanner CI/CD pipeline integrations
 
 ### [3.2.0] - Future
-- [ ] Database storage for scan history
-- [ ] Email notifications
-- [ ] Slack/Teams integration
-- [ ] Advanced vulnerability correlation
-- [ ] Machine learning for false positive reduction
+- [ ] TAD Scanner database storage for scan history
+- [ ] TAD Scanner email notifications
+- [ ] TAD Scanner Slack/Teams integration
+- [ ] Advanced vulnerability correlation in TAD Scanner
+- [ ] TAD Scanner machine learning for false positive reduction
 
 ---
 
-## Contributing
+## Contributing to TAD Scanner
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to contribute to this project.
+We welcome contributions to TAD Scanner! Please see our [Contributing Guide](CONTRIBUTING.md) for details on how to contribute to the TAD Scanner project.
 
-## Support
+## TAD Scanner Support
 
-If you encounter any issues or have questions, please:
-1. Check the [documentation](docs/)
-2. Search [existing issues](https://github.com/your-username/trivy-enhanced-scanner/issues)
-3. Create a [new issue](https://github.com/your-username/trivy-enhanced-scanner/issues/new) if needed
+If you encounter any issues with TAD Scanner or have questions, please:
+1. Check the [TAD Scanner documentation](docs/)
+2. Search [existing TAD Scanner issues](https://github.com/your-username/tad-scanner/issues)
+3. Create a [new TAD Scanner issue](https://github.com/your-username/tad-scanner/issues/new) if needed
+
+🛡️ **TAD Scanner - Making container security scanning simple and powerful!**
