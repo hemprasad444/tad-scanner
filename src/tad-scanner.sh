@@ -2,7 +2,7 @@
 
 # TAD Scanner - Trivy Advanced Detection Scanner
 # Version 3.0 - Enhanced Container Vulnerability Scanner
-# Repository: https://github.com/your-username/tad-scanner
+# Repository: https://github.com/hemprasad444/tad-scanner
 # License: MIT
 
 set -e
@@ -28,7 +28,7 @@ UNKNOWN_COLOR='\033[0;37m'   # Gray
 TOOL_NAME="TAD Scanner"
 TOOL_FULL_NAME="Trivy Advanced Detection Scanner"
 VERSION="3.0"
-GITHUB_REPO="https://github.com/your-username/tad-scanner"
+GITHUB_REPO="https://github.com/hemprasad444/tad-scanner"
 OUTPUT_DIR="tad-scan-results"
 SELECTED_IMAGES=()
 OUTPUT_FORMAT="json"

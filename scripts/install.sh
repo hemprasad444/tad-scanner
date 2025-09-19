@@ -14,9 +14,10 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 # Configuration
-REPO_URL="https://github.com/your-username/tad-scanner"
+REPO_URL="https://github.com/hemprasad444/tad-scanner"
 INSTALL_DIR="$HOME/tad-scanner"
 BIN_DIR="$HOME/.local/bin"
+INSTALL_BIN_DIR="/usr/local/bin"
 
 log_info() { echo -e "${GREEN}[TAD-INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[TAD-WARN]${NC} $1"; }
@@ -59,7 +60,17 @@ check_dependencies() {
 install_trivy() {
     if ! command -v trivy &> /dev/null; then
         log_info "Installing Trivy for TAD Scanner..."
-        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+        # Choose install target based on write permission
+        local target_bin="$INSTALL_BIN_DIR"
+        if [ ! -w "$INSTALL_BIN_DIR" ]; then
+            target_bin="$BIN_DIR"
+            mkdir -p "$BIN_DIR"
+        fi
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b "$target_bin"
+        # Ensure PATH contains BIN_DIR when non-root install
+        if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+        fi
         log_info "✓ Trivy installed successfully for TAD Scanner"
     else
         log_info "✓ Trivy already installed for TAD Scanner: $(trivy --version | head -1)"
@@ -92,14 +103,8 @@ clone_repository() {
     log_info "Cloning TAD Scanner repository..."
     
     if [[ -d "$INSTALL_DIR" ]]; then
-        log_warn "TAD Scanner directory $INSTALL_DIR already exists"
-        read -p "Remove existing TAD Scanner installation and reinstall? (y/N): " choice
-        if [[ "$choice" =~ ^[Yy] ]]; then
-            rm -rf "$INSTALL_DIR"
-        else
-            log_info "TAD Scanner installation cancelled"
-            exit 0
-        fi
+        log_warn "TAD Scanner directory $INSTALL_DIR already exists. Reinstalling non-interactively."
+        rm -rf "$INSTALL_DIR"
     fi
     
     git clone "$REPO_URL" "$INSTALL_DIR"
