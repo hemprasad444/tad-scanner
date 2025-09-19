@@ -1,0 +1,57 @@
+# Example Docker Compose file for Enhanced Trivy Scanner
+# This demonstrates how to use the scanner in a containerized environment
+
+version: '3.8'
+
+services:
+  trivy-enhanced-scanner:
+    image: ubuntu:22.04
+    container_name: trivy-scanner
+    volumes:
+      - ./src:/app/src:ro
+      - ./scripts:/app/scripts:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./scan-results:/app/results
+    working_dir: /app
+    environment:
+      - TRIVY_CACHE_DIR=/tmp/trivy-cache
+      - TRIVY_TEMP_DIR=/tmp/trivy-temp
+    command: |
+      bash -c "
+        apt-get update && apt-get install -y curl jq git &&
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin &&
+        chmod +x /app/src/trivy-enhanced-scanner.sh &&
+        /app/src/trivy-enhanced-scanner.sh
+      "
+    stdin_open: true
+    tty: true
+    networks:
+      - scanner-network
+
+  # Example: Scan a specific image
+  scan-nginx:
+    image: ubuntu:22.04
+    container_name: scan-nginx
+    volumes:
+      - ./src:/app/src:ro
+      - ./scan-results:/app/results
+    environment:
+      - TARGET_IMAGE=nginx:latest
+      - OUTPUT_FORMAT=json
+      - SEVERITY_FILTER=HIGH_CRITICAL
+    command: |
+      bash -c "
+        apt-get update && apt-get install -y curl jq &&
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin &&
+        trivy image --format json --output /app/results/nginx-scan.json nginx:latest
+      "
+    networks:
+      - scanner-network
+
+networks:
+  scanner-network:
+    driver: bridge
+
+volumes:
+  scan-results:
+    driver: local

@@ -1,0 +1,137 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test Enhanced Trivy Scanner
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install dependencies
+      run: |
+        # Install Trivy
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+        
+        # Install jq
+        sudo apt-get update && sudo apt-get install -y jq
+        
+    - name: Verify installation
+      run: |
+        trivy --version
+        jq --version
+        
+    - name: Test script syntax
+      run: |
+        bash -n src/trivy-enhanced-scanner.sh
+        bash -n src/trivy-scanner.sh
+        bash -n scripts/install.sh
+        
+    - name: Run basic functionality test
+      run: |
+        # Test dependency check
+        timeout 10 ./src/trivy-enhanced-scanner.sh || true
+        
+    - name: Test installation script
+      run: |
+        # Test install script syntax
+        bash -n scripts/install.sh
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint Shell Scripts
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install ShellCheck
+      run: |
+        sudo apt-get update && sudo apt-get install -y shellcheck
+        
+    - name: Run ShellCheck
+      run: |
+        find . -name "*.sh" -exec shellcheck {} \;
+
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  docs:
+    runs-on: ubuntu-latest
+    name: Documentation Check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check documentation
+      run: |
+        # Check if required files exist
+        test -f README.md
+        test -f LICENSE
+        test -f CHANGELOG.md
+        
+        # Check README has required sections
+        grep -q "## Features" README.md
+        grep -q "## Quick Start" README.md
+        grep -q "## Prerequisites" README.md
+        
+    - name: Validate markdown
+      uses: DavidAnson/markdownlint-action@v1
+      with:
+        files: '**/*.md'
+        config: '.markdownlint.json'
+        ignore: 'node_modules'
+
+  release:
+    needs: [test, lint, security, docs]
+    runs-on: ubuntu-latest
+    name: Create Release
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create release archive
+      run: |
+        tar -czf trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz \
+          src/ scripts/ docs/ examples/ README.md LICENSE CHANGELOG.md
+          
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz
+        asset_name: trivy-enhanced-scanner-${{ github.event.release.tag_name }}.tar.gz
+        asset_content_type: application/gzip
