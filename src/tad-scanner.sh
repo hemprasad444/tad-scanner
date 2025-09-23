@@ -30,6 +30,7 @@ TOOL_FULL_NAME="Trivy Advanced Detection Scanner"
 VERSION="3.0"
 GITHUB_REPO="https://github.com/hemprasad444/tad-scanner"
 OUTPUT_DIR="tad-scan-results"
+BASE_RESULTS_DIR="tab results"
 SELECTED_IMAGES=()
 OUTPUT_FORMAT="json"
 PARSE_MODE="standard"
@@ -248,6 +249,27 @@ show_enhanced_config() {
     read -p "TAD Choice: " choice
     
     case "$choice" in
+        "1")
+            echo ""
+            echo "TAD Scanner Output Format Options:"
+            echo "  1. JSON (raw Trivy output)"
+            echo "  2. CSV (processed vulnerability data)"
+            echo ""
+            read -p "Select TAD output format (1-2): " format_choice
+            case "$format_choice" in
+                "1")
+                    OUTPUT_FORMAT="json"
+                    log_info "✅ TAD output format set to: JSON"
+                    ;;
+                "2")
+                    OUTPUT_FORMAT="csv"
+                    log_info "✅ TAD output format set to: CSV"
+                    ;;
+                *)
+                    log_warn "Invalid choice"
+                    ;;
+            esac
+            ;;
         "4")
             echo ""
             echo "TAD Scanner Severity Filter Options:"
@@ -541,6 +563,113 @@ demo_enhanced_scan() {
     read -p "Press Enter to continue..."
 }
 
+# Real scan function using Trivy, saving under BASE_RESULTS_DIR/OUTPUT_DIR_timestamp
+start_real_scan() {
+    print_header
+    log_step "Starting TAD Scanner Real Scan"
+    echo ""
+    
+    if [[ ${#SELECTED_IMAGES[@]} -eq 0 ]]; then
+        log_warn "No images selected for TAD scanning!"
+        echo "Please select images using TAD Scanner options 1-4 first."
+        read -p "Press Enter to continue..."
+        return 0
+    fi
+    
+    local timestamp=$(date +%Y%m%d_%H%M%S)
+    local output_dir="${BASE_RESULTS_DIR}/${OUTPUT_DIR}_${timestamp}"
+    local scan_log="$output_dir/logs/scan.log"
+    
+    log_info "Creating output directory: $output_dir"
+    mkdir -p "$output_dir"/{json,csv,logs}
+    
+    echo "TAD Scanner - Real Scan - Started at $(date)" > "$scan_log"
+    echo "Configuration:" >> "$scan_log"
+    echo "  Output Format: $OUTPUT_FORMAT" >> "$scan_log"
+    echo "  Severity Filter: $SEVERITY_FILTER" >> "$scan_log"
+    echo "  CVE Age Filter: $CVE_AGE_FILTER" >> "$scan_log"
+    echo "  Parallel Scans: $PARALLEL_SCANS" >> "$scan_log"
+    echo "  Total Images: ${#SELECTED_IMAGES[@]}" >> "$scan_log"
+    echo "" >> "$scan_log"
+    
+    local success_count=0
+    local fail_count=0
+    
+    for i in "${!SELECTED_IMAGES[@]}"; do
+        local image="${SELECTED_IMAGES[$i]}"
+        local type="${image%%:*}"
+        local name="${image#*:}"
+        local safe_name=$(echo "$name" | sed 's/[^a-zA-Z0-9._-]/_/g')
+        local json_out="$output_dir/json/${safe_name}.json"
+        
+        log_info "Scanning ($((i+1))/${#SELECTED_IMAGES[@]}): $name"
+        echo "Scanning ($((i+1))/${#SELECTED_IMAGES[@]}): $name" >> "$scan_log"
+        
+        local scan_success=false
+        case "$type" in
+            "remote"|"local")
+                if trivy image -f json -o "$json_out" "$name" >> "$scan_log" 2>&1; then
+                    scan_success=true
+                fi
+                ;;
+            "tar")
+                if trivy image --input "$name" -f json -o "$json_out" >> "$scan_log" 2>&1; then
+                    scan_success=true
+                fi
+                ;;
+            *)
+                # Fallback: try as image reference
+                if trivy image -f json -o "$json_out" "$name" >> "$scan_log" 2>&1; then
+                    scan_success=true
+                fi
+                ;;
+        esac
+        
+        if $scan_success; then
+            log_success "✅ Success: $name"
+            echo "✅ Success: $name" >> "$scan_log"
+            success_count=$((success_count + 1))
+        else
+            log_error "❌ Failed: $name"
+            echo "❌ Failed: $name" >> "$scan_log"
+            fail_count=$((fail_count + 1))
+        fi
+    done
+    
+    # CSV processing if requested
+    if [[ "$OUTPUT_FORMAT" == "csv" ]]; then
+        log_step "Processing results to CSV..."
+        if command -v python3 >/dev/null 2>&1; then
+            if python3 -c "import pandas" 2>/dev/null; then
+                # Convert each JSON to CSV and place in csv dir
+                for jf in "$output_dir"/json/*.json; do
+                    [ -f "$jf" ] || continue
+                    python3 "$(dirname "$0")/../scripts/json_to_csv_converter.py" "$jf" >> "$scan_log" 2>&1 || true
+                    local produced_csv="${jf%.json}.csv"
+                    if [ -f "$produced_csv" ]; then
+                        mv "$produced_csv" "$output_dir/csv/" 2>/dev/null || true
+                    fi
+                done
+            else
+                log_warn "Pandas not installed. Skipping CSV conversion. JSON available in $output_dir/json"
+            fi
+        else
+            log_warn "python3 not found. Skipping CSV conversion. JSON available in $output_dir/json"
+        fi
+    fi
+    
+    echo "" >> "$scan_log"
+    echo "Scan completed at $(date)" >> "$scan_log"
+    echo "Success: $success_count, Failed: $fail_count, Total: ${#SELECTED_IMAGES[@]}" >> "$scan_log"
+    
+    log_info "Scan completed! Success: $success_count, Failed: $fail_count"
+    echo ""
+    echo "Results saved in: $output_dir"
+    echo ""
+    play_notification
+    read -p "Press Enter to continue..."
+}
+
 # Placeholder functions
 scan_remote_images() { 
     log_info "TAD Scanner remote image scanning available"
@@ -629,7 +758,7 @@ main() {
                 show_enhanced_config
                 ;;
             "6")
-                demo_enhanced_scan
+                start_real_scan
                 ;;
             "7")
                 view_previous_results
