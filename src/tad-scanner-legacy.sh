@@ -19,6 +19,7 @@ NC='\033[0m'
 TOOL_NAME="Advanced Trivy Scanner"
 VERSION="2.0"
 OUTPUT_DIR="trivy-advanced-results"
+BASE_RESULTS_DIR="tab results"
 SELECTED_IMAGES=()
 OUTPUT_FORMAT="json"
 PARSE_MODE="standard"
@@ -576,7 +577,7 @@ review_and_scan() {
 
 start_advanced_scan() {
     local timestamp=$(date +%Y%m%d_%H%M%S)
-    local output_dir="${OUTPUT_DIR}_${timestamp}"
+    local output_dir="${BASE_RESULTS_DIR}/${OUTPUT_DIR}_${timestamp}"
     
     log_step "Starting Advanced Scan"
     echo ""
@@ -923,12 +924,12 @@ main() {
             6) review_and_scan ;;
             7) 
                 print_header
-                log_warn "View results functionality - check your trivy-advanced-results_* directories"
+        log_warn "View results functionality - check your ${BASE_RESULTS_DIR}/${OUTPUT_DIR}_* directories"
                 read -p "Press Enter to continue..."
                 ;;
             8)
                 print_header
-                log_warn "Clean up functionality - manually remove trivy-advanced-results_* directories"
+        log_warn "Clean up functionality - manually remove ${BASE_RESULTS_DIR}/${OUTPUT_DIR}_* directories"
                 read -p "Press Enter to continue..."
                 ;;
             9) show_help ;;
